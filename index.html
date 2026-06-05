@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>👑 MAE ADMIN PANEL | Verifikasi Peserta</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Poppins', 'Segoe UI', monospace;
+      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a0a 100%);
+      min-height: 100vh;
+      color: #e0e0e0;
+    }
+    .header {
+      background: rgba(0,0,0,0.8);
+      padding: 20px;
+      text-align: center;
+      border-bottom: 2px solid #ffaa44;
+    }
+    .header h1 {
+      color: #ffaa44;
+      font-size: 1.8rem;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .stats {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+    .stat-card {
+      background: #1a1a1a;
+      border-radius: 16px;
+      padding: 20px;
+      flex: 1;
+      text-align: center;
+      border: 1px solid #333;
+    }
+    .stat-number {
+      font-size: 2.5rem;
+      font-weight: bold;
+      color: #ffaa44;
+    }
+    .daftar-peserta {
+      background: #111;
+      border-radius: 20px;
+      padding: 20px;
+      border: 1px solid #333;
+    }
+    .daftar-peserta h2 {
+      margin-bottom: 20px;
+      color: #ffaa44;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #333;
+    }
+    th {
+      background: #1a1a1a;
+      color: #ffaa44;
+    }
+    .status-badge {
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: bold;
+    }
+    .status-lulus { background: #22c55e; color: white; }
+    .status-tolak { background: #ef4444; color: white; }
+    .status-proses { background: #f59e0b; color: white; }
+    button {
+      background: #ffaa44;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      margin: 2px;
+    }
+    .btn-verif { background: #22c55e; color: white; }
+    .btn-tolak { background: #ef4444; color: white; }
+    .btn-detail { background: #3b82f6; color: white; }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.9);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .modal-content {
+      background: #1a1a1a;
+      border-radius: 20px;
+      padding: 30px;
+      max-width: 500px;
+      width: 90%;
+      border: 1px solid #ffaa44;
+    }
+    .modal-content h3 {
+      color: #ffaa44;
+      margin-bottom: 20px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    .form-group input, .form-group textarea {
+      width: 100%;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #333;
+      background: #0a0a0a;
+      color: white;
+    }
+    .close-modal {
+      float: right;
+      cursor: pointer;
+      font-size: 1.5rem;
+    }
+    .filter-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .filter-bar input {
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #333;
+      background: #0a0a0a;
+      color: white;
+      flex: 1;
+    }
+    .filter-bar select {
+      padding: 10px;
+      border-radius: 10px;
+      background: #0a0a0a;
+      color: white;
+      border: 1px solid #333;
+    }
+    @media (max-width: 768px) {
+      th, td { font-size: 0.8rem; padding: 8px; }
+      .stat-card { min-width: 120px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1><i class="fas fa-crown"></i> MAE ADMIN PANEL <i class="fas fa-crown"></i></h1>
+  <p>Verifikasi Calon Anggota MAE | Cek TikTok Otomatis</p>
+</div>
+
+<div class="container">
+  <!-- STATISTIK -->
+  <div class="stats">
+    <div class="stat-card"><div class="stat-number" id="totalPeserta">0</div><div>Total Peserta</div></div>
+    <div class="stat-card"><div class="stat-number" id="totalLulus">0</div><div>✅ Lulus</div></div>
+    <div class="stat-card"><div class="stat-number" id="totalProses">0</div><div>⏳ Proses</div></div>
+    <div class="stat-card"><div class="stat-number" id="totalTolak">0</div><div>❌ Ditolak</div></div>
+  </div>
+
+  <!-- FILTER -->
+  <div class="filter-bar">
+    <input type="text" id="searchInput" placeholder="🔍 Cari nama / username...">
+    <select id="filterStatus">
+      <option value="all">Semua Status</option>
+      <option value="proses">⏳ Proses</option>
+      <option value="lulus">✅ Lulus</option>
+      <option value="tolak">❌ Ditolak</option>
+    </select>
+    <button id="refreshBtn" style="width: auto; background: #3b82f6;"><i class="fas fa-sync-alt"></i> Refresh</button>
+  </div>
+
+  <!-- DAFTAR PESERTA -->
+  <div class="daftar-peserta">
+    <h2><i class="fas fa-users"></i> Daftar Peserta MAE</h2>
+    <div style="overflow-x: auto;">
+      <table id="pesertaTable">
+        <thead>
+          <tr><th>No</th><th>Nama</th><th>Username TikTok</th><th>Cek Nama</th><th>Cek Bio</th><th>Cek Hashtag</th><th>Status</th><th>Aksi</th></tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL VERIFIKASI -->
+<div id="verifModal" class="modal">
+  <div class="modal-content">
+    <span class="close-modal" onclick="closeModal()">&times;</span>
+    <h3><i class="fab fa-tiktok"></i> Verifikasi Peserta</h3>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<script>
+  // ========== DATA PESERTA (CONTOH - NANTI DARI TELEGRAM) ==========
+  let pesertaData = [
+    { id: 1, nama: "Arka Veyron", umur: "22", margaAsal: "kgn", doubleMarga: "Ya", asal: "Jawa Timur", alasan: "Ingin menjadi kuat", tiktok: "@arkaveyron_ftMAE", bio: "part of mae 🔥", hashtag: "#maefamily #maefanbase", status: "proses", tglDaftar: "2025-01-15" },
+    { id: 2, nama: "Lina Shadow", umur: "19", margaAsal: "nca", doubleMarga: "Tidak", asal: "Jawa Barat", alasan: "Cari pengalaman", tiktok: "@linashadow_MAE", bio: "part of mae ✨", hashtag: "#maefamily #maefanbase", status: "proses", tglDaftar: "2025-01-16" },
+    { id: 3, nama: "Reyz XNR", umur: "21", margaAsal: "wangy", doubleMarga: "Ya", asal: "Jawa Tengah", alasan: "Mau gabung komunitas keren", tiktok: "@reyzxnr", bio: "masih belajar", hashtag: "#maefamily", status: "proses", tglDaftar: "2025-01-17" }
+  ];
+
+  let filteredData = [...pesertaData];
+  let currentFilter = "all";
+  let currentSearch = "";
+
+  // Fungsi cek otomatis
+  function cekNamaTikTok(tiktok) {
+    const tiktokLower = tiktok.toLowerCase();
+    if (tiktokLower.includes("ft mae") || tiktokLower.includes("_ftmae") || tiktokLower.includes("ftmae") || tiktokLower.includes("_mae") || tiktokLower.endsWith("mae")) {
+      return { status: "✅", text: "Lulus", color: "#22c55e" };
+    }
+    return { status: "❌", text: "Tidak mengandung ft MAE / MAE", color: "#ef4444" };
+  }
+
+  function cekBio(bio) {
+    const bioLower = bio.toLowerCase();
+    if (bioLower.includes("part of mae")) {
+      return { status: "✅", text: "Lulus", color: "#22c55e" };
+    }
+    return { status: "❌", text: "Bio belum 'part of mae'", color: "#ef4444" };
+  }
+
+  function cekHashtag(hashtag) {
+    const hashtagLower = hashtag.toLowerCase();
+    const hasFamily = hashtagLower.includes("#maefamily");
+    const hasFanbase = hashtagLower.includes("#maefanbase");
+    if (hasFamily && hasFanbase) {
+      return { status: "✅", text: "Lulus", color: "#22c55e" };
+    } else if (!hasFamily && !hasFanbase) {
+      return { status: "❌", text: "Tidak ada tagar", color: "#ef4444" };
+    } else {
+      return { status: "⚠️", text: "Hanya 1 tagar", color: "#f59e0b" };
+    }
+  }
+
+  function hitungStatusKeseluruhan(cekNama, cekBio, cekHash) {
+    if (cekNama.status === "✅" && cekBio.status === "✅" && cekHash.status === "✅") {
+      return "lulus";
+    }
+    return "proses";
+  }
+
+  function renderTable() {
+    const tbody = document.getElementById('tableBody');
+    const filtered = pesertaData.filter(p => {
+      const matchStatus = currentFilter === "all" || p.status === currentFilter;
+      const matchSearch = p.nama.toLowerCase().includes(currentSearch) || p.tiktok.toLowerCase().includes(currentSearch);
+      return matchStatus && matchSearch;
+    });
+    filteredData = filtered;
+    
+    document.getElementById('totalPeserta').innerText = pesertaData.length;
+    document.getElementById('totalLulus').innerText = pesertaData.filter(p => p.status === "lulus").length;
+    document.getElementById('totalProses').innerText = pesertaData.filter(p => p.status === "proses").length;
+    document.getElementById('totalTolak').innerText = pesertaData.filter(p => p.status === "tolak").length;
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align: center;">Tidak ada data</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = filtered.map((p, idx) => {
+      const cekNama = cekNamaTikTok(p.tiktok);
+      const cekBio = cekBio(p.bio);
+      const cekHash = cekHashtag(p.hashtag);
+      const statusBadge = p.status === "lulus" ? '<span class="status-badge status-lulus">✅ LULUS</span>' :
+                          p.status === "tolak" ? '<span class="status-badge status-tolak">❌ DITOLAK</span>' :
+                          '<span class="status-badge status-proses">⏳ PROSES</span>';
+      return `
+        <tr>
+          <td>${idx+1}</td>
+          <td>${p.nama}</td>
+          <td>${p.tiktok}</td>
+          <td style="color: ${cekNama.color}">${cekNama.status} ${cekNama.text}</td>
+          <td style="color: ${cekBio.color}">${cekBio.status} ${cekBio.text}</td>
+          <td style="color: ${cekHash.color}">${cekHash.status} ${cekHash.text}</td>
+          <td>${statusBadge}</td>
+          <td>
+            <button class="btn-detail" onclick="detailPeserta(${p.id})"><i class="fas fa-eye"></i> Detail</button>
+            <button class="btn-verif" onclick="verifikasiPeserta(${p.id})"><i class="fas fa-check"></i> Verif</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function detailPeserta(id) {
+    const peserta = pesertaData.find(p => p.id === id);
+    const cekNama = cekNamaTikTok(peserta.tiktok);
+    const cekBio = cekBio(peserta.bio);
+    const cekHash = cekHashtag(peserta.hashtag);
+    
+    document.getElementById('modalContent').innerHTML = `
+      <p><strong>👤 Nama:</strong> ${peserta.nama}</p>
+      <p><strong>🎂 Umur:</strong> ${peserta.umur}</p>
+      <p><strong>📱 TikTok:</strong> ${peserta.tiktok}</p>
+      <p><strong>📝 Bio:</strong> ${peserta.bio}</p>
+      <p><strong>🏷️ Hashtag:</strong> ${peserta.hashtag}</p>
+      <hr style="margin: 15px 0; border-color: #333;">
+      <p><strong>🔍 Hasil Cek:</strong></p>
+      <p>• Nama TikTok: ${cekNama.status} ${cekNama.text}</p>
+      <p>• Bio: ${cekBio.status} ${cekBio.text}</p>
+      <p>• Hashtag: ${cekHash.status} ${cekHash.text}</p>
+      <hr style="margin: 15px 0;">
+      <p><strong>🏯 Marga Sebelum MAE:</strong> ${peserta.margaAsal}</p>
+      <p><strong>🔗 Double Marga:</strong> ${peserta.doubleMarga}</p>
+      <p><strong>🌍 Asal:</strong> ${peserta.asal}</p>
+      <p><strong>📜 Alasan:</strong> ${peserta.alasan}</p>
+      <button onclick="window.open('https://www.tiktok.com/${peserta.tiktok}', '_blank')" style="margin-top: 15px; width: 100%;"><i class="fab fa-tiktok"></i> Buka Profil TikTok</button>
+    `;
+    document.getElementById('verifModal').style.display = 'flex';
+  }
+
+  function verifikasiPeserta(id) {
+    const peserta = pesertaData.find(p => p.id === id);
+    const cekNama = cekNamaTikTok(peserta.tiktok);
+    const cekBio = cekBio(peserta.bio);
+    const cekHash = cekHashtag(peserta.hashtag);
+    
+    let pesan = `🔍 VERIFIKASI PESERTA\n\nNama: ${peserta.nama}\nTikTok: ${peserta.tiktok}\n\nHasil Cek:\n`;
+    pesan += `• Nama TikTok: ${cekNama.text}\n`;
+    pesan += `• Bio: ${cekBio.text}\n`;
+    pesan += `• Hashtag: ${cekHash.text}\n\n`;
+    
+    if (cekNama.status === "✅" && cekBio.status === "✅" && cekHash.status === "✅") {
+      if (confirm(pesan + `✅ Semua kriteria terpenuhi!\n\nSetujui peserta ini?`)) {
+        peserta.status = "lulus";
+        alert(`✅ ${peserta.nama} telah LULUS seleksi!`);
+        renderTable();
+      }
+    } else {
+      if (confirm(pesan + `⚠️ Ada kriteria yang belum terpenuhi!\n\nTetap verifikasi? (bisa diubah nanti)`)) {
+        peserta.status = "proses";
+        alert(`⚠️ ${peserta.nama} masih dalam proses verifikasi.`);
+        renderTable();
+      }
+    }
+  }
+
+  function closeModal() {
+    document.getElementById('verifModal').style.display = 'none';
+  }
+
+  window.onclick = function(event) {
+    const modal = document.getElementById('verifModal');
+    if (event.target === modal) closeModal();
+  }
+
+  document.getElementById('searchInput').addEventListener('input', (e) => {
+    currentSearch = e.target.value.toLowerCase();
+    renderTable();
+  });
+  document.getElementById('filterStatus').addEventListener('change', (e) => {
+    currentFilter = e.target.value;
+    renderTable();
+  });
+  document.getElementById('refreshBtn').addEventListener('click', () => {
+    renderTable();
+  });
+
+  renderTable();
+</script>
+</body>
+  </html>
